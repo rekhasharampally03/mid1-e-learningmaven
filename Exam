@@ -1,0 +1,345 @@
+FROM tomcat:9-jdk17
+
+COPY target/*.war /usr/local/tomcat/webapps/ROOT.war
+
+EXPOSE 8080
+
+CMD ["catalina.sh", "run"]
+
+
+
+
+Absolutely. For your Online Ticketing System (Maven WAR + Tomcat), use this Dockerfile and keep all Docker commands in the Eclipse Terminal.
+
+1. Dockerfile
+
+Create the file named exactly:
+
+Dockerfile
+
+Place it in the project root, where pom.xml and target are present:
+
+E-ticketing/
+├── pom.xml
+├── Dockerfile
+├── src/
+└── target/
+    └── LibraryRegistration.war
+
+Write:
+
+FROM tomcat:9-jdk17
+
+COPY target/*.war /usr/local/tomcat/webapps/ROOT.war
+
+EXPOSE 8080
+
+CMD ["catalina.sh", "run"]
+
+What each line means
+
+Dockerfile line	Meaning
+
+FROM tomcat:9-jdk17	Uses Tomcat 9 with JDK 17
+COPY target/*.war ...	Copies your Maven WAR into Tomcat
+EXPOSE 8080	Container application uses port 8080
+CMD ["catalina.sh", "run"]	Starts Tomcat when container starts
+
+
+
+---
+
+2. Maven commands before Docker
+
+Go to your project:
+
+cd ~/E-ticketing
+
+Build the WAR:
+
+mvn clean package
+
+Check that the WAR exists:
+
+ls target
+
+You should see:
+
+LibraryRegistration.war
+
+
+---
+
+3. Docker basic commands — important for viva
+
+Check Docker version
+
+docker --version
+
+Check Docker information
+
+docker info
+
+Login to DockerHub
+
+docker login
+
+Logout
+
+docker logout
+
+
+---
+
+4. Build Docker image
+
+Because Docker image repository names must be lowercase:
+
+docker build -t ots .
+
+Here:
+
+docker build → builds image
+
+-t ots → gives image the name ots
+
+. → uses current directory as build context
+
+
+Check images:
+
+docker images
+
+or:
+
+docker image ls
+
+
+---
+
+5. Tag image for DockerHub
+
+Your DockerHub username is rekha123.
+
+docker tag ots rekha123/ots:latest
+
+Check:
+
+docker images
+
+You should see:
+
+ots
+rekha123/ots
+
+
+---
+
+6. Push image to DockerHub
+
+docker push rekha123/ots:latest
+
+This uploads your image to DockerHub.
+
+
+---
+
+7. Run the Docker container
+
+First, make sure local Tomcat is stopped, otherwise port 8080 may already be occupied.
+
+Then:
+
+docker run -d -p 8080:8080 --name ots-container rekha123/ots:latest
+
+Meaning of -p
+
+-p 8080:8080
+   ↑     ↑
+ host   container
+
+So:
+
+localhost:8080 → Docker container:8080
+
+
+---
+
+8. Check running containers
+
+docker ps
+
+You should see:
+
+ots-container
+
+with:
+
+0.0.0.0:8080->8080/tcp
+
+
+---
+
+9. Check all containers
+
+Even stopped containers:
+
+docker ps -a
+
+This is especially useful if the container immediately stops.
+
+
+---
+
+10. Check container logs
+
+docker logs ots-container
+
+For continuously watching logs:
+
+docker logs -f ots-container
+
+Press:
+
+Ctrl + C
+
+to stop watching logs.
+
+
+---
+
+11. Open the application
+
+After:
+
+docker ps
+
+shows the container running, open:
+
+http://localhost:8080
+
+Because we copied the WAR as:
+
+ROOT.war
+
+you don't need:
+
+/LibraryRegistration
+
+
+---
+
+12. Stop container
+
+docker stop ots-container
+
+
+---
+
+13. Start an existing stopped container
+
+docker start ots-container
+
+
+---
+
+14. Restart container
+
+docker restart ots-container
+
+
+---
+
+15. Remove container
+
+First stop it:
+
+docker stop ots-container
+
+Then:
+
+docker rm ots-container
+
+Or force remove:
+
+docker rm -f ots-container
+
+
+---
+
+16. Remove image
+
+docker rmi ots
+
+For the DockerHub-tagged image:
+
+docker rmi rekha123/ots:latest
+
+
+---
+
+17. Pull image from DockerHub
+
+If another developer wants your image:
+
+docker pull rekha123/ots:latest
+
+Then run:
+
+docker run -d -p 8080:8080 --name ots-container rekha123/ots:latest
+
+
+---
+
+⭐ Complete commands for YOUR lab
+
+You can memorize this sequence:
+
+cd ~/E-ticketing
+
+mvn clean package
+
+docker login
+
+docker build -t ots .
+
+docker images
+
+docker tag ots rekha123/ots:latest
+
+docker push rekha123/ots:latest
+
+docker run -d -p 8080:8080 --name ots-container rekha123/ots:latest
+
+docker ps
+
+docker logs ots-container
+
+Then open:
+
+http://localhost:8080
+
+Most important Docker commands for viva
+
+Command	Purpose
+
+docker --version	Check Docker version
+docker login	Login to DockerHub
+docker build -t ots .	Build image
+docker images	List images
+docker tag	Give image a repository/tag
+docker push	Upload image to DockerHub
+docker pull	Download image
+docker run	Create and start container
+docker ps	Show running containers
+docker ps -a	Show all containers
+docker logs	View container logs
+docker stop	Stop container
+docker start	Start stopped container
+docker restart	Restart container
+docker rm	Remove container
+docker rmi	Remove image
+
+
+For your Set-2 practical, the key flow is:
+Maven WAR → Dockerfile → docker build → docker tag → docker push → docker run -p 8080:8080 → browser.
